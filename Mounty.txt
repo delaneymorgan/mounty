@@ -1,0 +1,45 @@
+global tgtServer, tgtVolume, tgtUser
+global DEBUG
+
+on run
+	set tgtServer to "<hostname or address>"
+	set tgtVolume to "<volume to mount as>"
+	set tgtUser to "<user:password>"
+	set DEBUG to false
+	if DEBUG then say "running"
+end run
+
+on idle
+	tell application "System Events" to set diskNames to name of every disk
+	if tgtVolume is in diskNames then
+		if DEBUG then say "volume already mounted"
+		-- do nothing - it's already mounted
+	else
+		set cmdLine to "ping -c 2 -t 2 " & tgtServer
+		try
+			set ping to (do shell script cmdLine)
+			if ping contains "64 bytes" then
+				if DEBUG then say "server is online"
+				-- server is online
+				tell application "Finder"
+					try
+						if DEBUG then say "opening volume"
+						set tgtURL to "smb://" & tgtUser & "@" & tgtServer & "/" & tgtVolume
+						open location tgtURL
+					on error
+						if DEBUG then say "volume failed to mount"
+						-- ignore error - server is probably off
+					end try
+				end tell
+			end if
+		on error
+			if DEBUG then say "ping failed"
+			-- ping failed => server offline
+		end try
+	end if
+end idle
+
+on quit
+	if DEBUG then say "quitting"
+	continue quit
+end quit
