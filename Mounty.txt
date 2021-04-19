@@ -1,4 +1,4 @@
-global tgtServer, tgtVolume, tgtUser
+global tgtServer, tgtVolume, tgtUser, idlePeriod
 global DEBUG
 
 on run
@@ -7,6 +7,7 @@ on run
 	set tgtUser to "<user:password>"
 	set DEBUG to false
 	if DEBUG then say "running"
+	set idlePeriod to 60 -- (seconds) - used to prevent overlapping mounts
 end run
 
 on idle
@@ -37,6 +38,7 @@ on idle
 			-- ping failed => server offline
 		end try
 	end if
+	return idlePeriod
 end idle
 
 on quit
